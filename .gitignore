@@ -87,6 +87,13 @@ dataset/scannet_v2/val*
 
 runs/*/events*
 runs/
+runs-1/
+runs-2/
+runs-3/
+runs-4/
+runs-5/
+runs-6/
+runs-7/
 torch_points3d/
 
 output/*
