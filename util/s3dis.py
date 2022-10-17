@@ -8,6 +8,7 @@ from torch.utils.data import Dataset
 from util.voxelize import voxelize
 from util.data_util import sa_create, collate_fn
 from util.data_util import data_prepare_v101 as data_prepare
+import open3d as o3d
 
 
 
@@ -40,6 +41,10 @@ class S3DIS(Dataset):
 
         coord, feat, label = data[:, 0:3], data[:, 3:6], data[:, 6]
         coord, feat, label = data_prepare(coord, feat, label, self.split, self.voxel_size, self.voxel_max, self.transform, self.shuffle_index)
+        # pcd = o3d.geometry.PointCloud()
+        # pcd.points = o3d.utility.Vector3dVector(coord.data.cpu().numpy())
+        # pcd.colors = o3d.utility.Vector3dVector(feat.data.cpu().numpy())
+        # o3d.io.write_point_cloud('./x.ply', pcd)
         return coord, feat, label
 
     def __len__(self):
@@ -47,10 +52,10 @@ class S3DIS(Dataset):
 
 
 if __name__ == '__main__':
-    data_root = '/home/share/Dataset/s3dis'
+    data_root = '/file/fz20/s3dis/trainval_fullarea/'
     test_area, voxel_size, voxel_max = 5, 0.04, 80000
 
-    point_data = S3DIS(split='train', data_root=data_root, test_area=test_area, voxel_size=voxel_size, voxel_max=voxel_max)
+    point_data = S3DIS(split='train', data_root=data_root, test_area=test_area, voxel_size=voxel_size, voxel_max=voxel_max, loop=30)
     print('point data size:', point_data.__len__())
     import torch, time, random
     manual_seed = 123
@@ -60,7 +65,7 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(manual_seed)
     def worker_init_fn(worker_id):
         random.seed(manual_seed + worker_id)
-    train_loader = torch.utils.data.DataLoader(point_data, batch_size=1, shuffle=False, num_workers=0, pin_memory=True, collate_fn=collate_fn)
+    train_loader = torch.utils.data.DataLoader(point_data, batch_size=3, shuffle=False, num_workers=0, pin_memory=True, collate_fn=collate_fn)
     for idx in range(1):
         end = time.time()
         voxel_num = []
